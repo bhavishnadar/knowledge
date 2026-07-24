@@ -16,14 +16,15 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       PR: ${{ github.event.pull_request.number }}
       DOCS_PATH: docs/
-      SYNC_AUTHOR: intercom-content-sync[bot]
+      SYNC_AUTHOR: fin-github-sync[bot]
     steps:
       - name: Gate on author + docs-only diff
         id: gate
         run: |
           set -euo pipefail
           author='${{ github.event.pull_request.user.login }}'
-          if [ "$author" != "$SYNC_AUTHOR" ]; then
+          norm() { printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | sed 's/\[bot\]$//'; }
+          if [ "$(norm "$author")" != "$(norm "$SYNC_AUTHOR")" ]; then
             echo "author '$author' is not the sync app — skipping"
             echo "ok=false" >> "$GITHUB_OUTPUT"; exit 0
           fi
