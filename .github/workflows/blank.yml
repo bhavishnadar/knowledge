@@ -1,0 +1,48 @@
+name: auto-merge-intercom-docs-sync
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    if: startsWith(github.head_ref, 'intercom/docs-sync/')
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR: ${{ github.event.pull_request.number }}
+      DOCS_PATH: docs/
+      SYNC_AUTHOR: intercom-content-sync[bot]
+    steps:
+      - name: Gate on author + docs-only diff
+        id: gate
+        run: |
+          set -euo pipefail
+          author='${{ github.event.pull_request.user.login }}'
+          if [ "$author" != "$SYNC_AUTHOR" ]; then
+            echo "author '$author' is not the sync app — skipping"
+            echo "ok=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+
+          files=$(gh api --paginate "repos/${{ github.repository }}/pulls/${PR}/files" --jq '.[].filename')
+          if [ -z "$files" ]; then
+            echo "no changed files — skipping"; echo "ok=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          echo "changed files:"; echo "$files"
+
+          while IFS= read -r f; do
+            case "$f" in
+              "$DOCS_PATH"*) ;;
+              *) echo "non-docs file '$f' — skipping"; echo "ok=false" >> "$GITHUB_OUTPUT"; exit 0 ;;
+            esac
+          done <<< "$files"
+
+          echo "ok=true" >> "$GITHUB_OUTPUT"
+
+      - name: Enable auto-merge
+        if: steps.gate.outputs.ok == 'true'
+        run: gh pr merge "$PR" --auto --squash
