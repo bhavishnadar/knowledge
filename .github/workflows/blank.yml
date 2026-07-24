@@ -15,7 +15,7 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
       PR: ${{ github.event.pull_request.number }}
-      DOCS_PATH: docs/
+      DOCS_PATH: intercom/
       SYNC_AUTHOR: fin-github-sync[bot]
     steps:
       - name: Gate on author + docs-only diff
