@@ -7,4 +7,4 @@ service_agent: disabled
 copilot: disabled
 sales_agent: disabled
 ---
-This is a test edit suggestion
+Content edited via admin UI - Admin Edit Request
