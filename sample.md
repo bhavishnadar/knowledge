@@ -7,4 +7,4 @@ service_agent: enabled
 copilot: disabled
 sales_agent: disabled
 ---
-New edit
+shouldnt flow to git
