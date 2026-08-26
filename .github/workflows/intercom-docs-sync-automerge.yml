@@ -33,10 +33,10 @@ jobs:
       # A JSON array in a quoted scalar: a folder name can hold any character,
       # including a newline, without escaping its way out into the workflow.
       MANAGED_FOLDERS: '[""]'
-      # The sync app opens setup and configuration pull requests too, and those
-      # are meant for a human. Only the branches it mints for content sync are
-      # eligible here.
-      SYNC_BRANCH_PATTERN: '^(intercom/docs-sync/[0-9]{14}|intercom/entity-sync/[a-z_]+-[0-9]+-[0-9]{14,17})$'
+      # The sync app opens setup, configuration and bulk content sync pull
+      # requests too, and those are meant for a human. Only the branch it mints
+      # for a single article's proposed change is eligible here.
+      SUGGESTION_BRANCH_PATTERN: '^intercom/suggestion/article_content-[0-9]+(-v[0-9]+)?$'
       RESERVED_FOLDER: '.github'
     steps:
       - name: Collect candidate pull requests
@@ -76,8 +76,11 @@ jobs:
               return 1
             fi
 
-            if ! jq -r '.head.ref' "$meta" | grep -Eq "$SYNC_BRANCH_PATTERN"; then
-              echo "PR #$pr is not from a content sync branch."
+            # [[ =~ ]] anchors to the whole string; grep would treat an embedded
+            # newline as a second line and match on the safe half alone.
+            head_ref="$(jq -r '.head.ref' "$meta")"
+            if [[ ! "$head_ref" =~ $SUGGESTION_BRANCH_PATTERN ]]; then
+              echo "PR #$pr is not from a single-article branch."
               return 1
             fi
 
