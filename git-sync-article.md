@@ -7,4 +7,4 @@ title: Git Sync article
 description: ''
 published: false
 ---
-hello world
+hello world hi
