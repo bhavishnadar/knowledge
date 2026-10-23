@@ -3,8 +3,8 @@ audience: everyone
 service_agent: enabled
 copilot: enabled
 sales_agent: enabled
+published: false
 title: Git Sync article
 description: ''
-published: false
 ---
-hello world hi
+hello world hi ghekkoi
